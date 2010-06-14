@@ -283,13 +283,20 @@ bool ttwaitsock(int fd, int mode, double timeout){
         } else {
           rv = rb_thread_select(fd + 1, &set, NULL, NULL, NULL);
         }
-        rv = pselect(fd + 1, &set, NULL, NULL, &ts, NULL);
         break;
       case 1:
-        rv = pselect(fd + 1, NULL, &set, NULL, &ts, NULL);
+        if(timeout > 0.0) {
+          rv = rb_thread_select(fd + 1, NULL, &set, NULL, &ts);
+        } else {
+          rv = rb_thread_select(fd + 1, NULL, &set, NULL, NULL);
+        }
         break;
       case 2:
-        rv = pselect(fd + 1, NULL, NULL, &set, &ts, NULL);
+        if(timeout > 0.0) {
+          rv = rb_thread_select(fd + 1, NULL, NULL, &set, &ts);
+        } else {
+          rv = rb_thread_select(fd + 1, NULL, NULL, &set, NULL);
+        }
         break;
     }
     if(rv > 0) return true;
