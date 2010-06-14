@@ -265,19 +265,24 @@ bool ttclosesock(int fd){
 
 /* Wait an I/O event of a socket. */
 bool ttwaitsock(int fd, int mode, double timeout){
-  assert(fd >= 0 && mode >= 0 && timeout >= 0);
+  assert(fd >= 0 && mode >= 0);// && timeout >= 0);
   while(true){
     fd_set set;
     FD_ZERO(&set);
     FD_SET(fd, &set);
     double integ, fract;
     fract = modf(timeout, &integ);
-    struct timespec ts;
+    struct timeval ts;
     ts.tv_sec = integ;
-    ts.tv_nsec = fract * 1000000000.0;
+    ts.tv_usec = fract * 1000000.0;
     int rv = -1;
     switch(mode){
       case 0:
+        if(timeout > 0.0) {
+          rv = rb_thread_select(fd + 1, &set, NULL, NULL, &ts);
+        } else {
+          rv = rb_thread_select(fd + 1, &set, NULL, NULL, NULL);
+        }
         rv = pselect(fd + 1, &set, NULL, NULL, &ts, NULL);
         break;
       case 1:
@@ -497,7 +502,8 @@ int ttsockgetc(TTSOCK *sock){
   do {
     int ocs = PTHREAD_CANCEL_DISABLE;
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &ocs);
-    if(sock->to > 0.0 && !ttwaitsock(sock->fd, 0, sock->to)){
+//    if(sock->to > 0.0 && !ttwaitsock(sock->fd, 0, sock->to)){
+    if(!ttwaitsock(sock->fd, 0, sock->to)){
       pthread_setcancelstate(ocs, NULL);
       return -1;
     }

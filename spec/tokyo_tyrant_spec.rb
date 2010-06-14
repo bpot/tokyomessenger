@@ -251,4 +251,9 @@ describe TokyoMessenger::DB, "with an open database" do
     @db["to_tokyo_tyrant"] = Thing.new
     @db["to_tokyo_tyrant"].should == "success"
   end
+
+  it "should raise error on timeout" do
+    @db = TokyoMessenger::DB.new('127.0.0.1', 45000, 0.0000000001)
+    lambda { @db.get('timeout') }.should.raise(TokyoMessengerError)
+  end
 end
