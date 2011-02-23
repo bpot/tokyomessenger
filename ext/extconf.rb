@@ -24,4 +24,6 @@ end
 
 $CFLAGS << ' -DNDEBUG -D_GNU_SOURCE=1 -fsigned-char -std=c99'
 
+$LIBS << " -lrt -ldl -lcrypt -lm -lc -lbz2"
+
 create_makefile 'tokyo_messenger'
